@@ -5,7 +5,6 @@ int main()
     char chaine1[100] = "Hello";
     char chaine2[100] = " World!";
     char copie[100];
-
     int longueur = 0;
     int i = 0;
     int j = 0;
@@ -18,7 +17,6 @@ int main()
         copie[i] = chaine1[i];
         i++;
     }
-
     copie[i] = '\0';
 
     i = longueur;
@@ -29,7 +27,6 @@ int main()
         i++;
         j++;
     }
-
     chaine1[i] = '\0';
 
     printf("Longueur : %d\n", longueur);

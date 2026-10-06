@@ -1,23 +1,24 @@
 CC ?= gcc
+CFLAGS = -Wall -Wextra -g
 
-CFLAGS=-Wall -Wextra -g
+ifeq ($(OS),Windows_NT)
+    EXE = .exe
+    LIBS = -lws2_32
+else
+    EXE =
+    LIBS =
+endif
 
-COBJS ?= client.o
-SOBJS ?= serveur.o 
+all: serveur$(EXE) client$(EXE) repertoire$(EXE)
 
-.SUFFIXES: .c .o
+serveur$(EXE): serveur.c serveur.h
+	$(CC) $(CFLAGS) serveur.c -o serveur$(EXE) $(LIBS)
 
-SERVER = serveur
-CLIENT = client
+client$(EXE): client.c client.h
+	$(CC) $(CFLAGS) client.c -o client$(EXE) $(LIBS)
 
-all: $(SERVER) $(CLIENT)
+repertoire$(EXE): repertoire.c repertoire.h
+	$(CC) $(CFLAGS) repertoire.c -o repertoire$(EXE)
 
-$(SERVER): $(SOBJS)
-	$(CC) -o $(SERVER) $(SOBJS)
-
-$(CLIENT): $(COBJS)
-	$(CC) -o $(CLIENT) $(COBJS)
-
-.c.o: 
-	$(CC) -c $*.c
-
+clean:
+	rm -f serveur serveur.exe client client.exe repertoire repertoire.exe

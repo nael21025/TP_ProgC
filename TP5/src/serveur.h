@@ -1,19 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2021 John Samuel
- *
- * SPDX-License-Identifier: GPL-3.0-or-later
- *
- */
-
-#ifndef __SERVER_H__
-#define __SERVER_H__
+#ifndef SERVEUR_H
+#define SERVEUR_H
 
 #define PORT 8089
 
-/* accepter la nouvelle connection d'un client et lire les données
- * envoyées par le client. En suite, le serveur envoie un message
- * en retour
- */
-int renvoie_message(int, char *);
+#ifdef _WIN32
+#include <winsock2.h>
+typedef SOCKET socket_t;
+#else
+typedef int socket_t;
+#endif
+
+int renvoie_message(socket_t client_socket_fd, const char *data);
+int recois_numeros_calcule(socket_t client_socket_fd, const char *data);
 
 #endif

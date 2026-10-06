@@ -1,102 +1,244 @@
-/*
- * SPDX-FileCopyrightText: 2021 John Samuel
- *
- * SPDX-License-Identifier: GPL-3.0-or-later
- *
- */
-
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#define close_socket closesocket
+#else
 #include <unistd.h>
-#include <sys/types.h>
+#include <arpa/inet.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
+#define close_socket close
+#endif
 
 #include "client.h"
 
-/**
- * Fonction pour envoyer et recevoir un message depuis un client connecté à la socket.
- *
- * @param socketfd Le descripteur de la socket utilisée pour la communication.
- * @return 0 en cas de succès, -1 en cas d'erreur.
- */
-int envoie_recois_message(int socketfd)
+int envoyer(socket_t socketfd, const char *data)
 {
-  char data[1024];
+#ifdef _WIN32
+    return send(socketfd, data, (int)strlen(data), 0);
+#else
+    return (int)send(socketfd, data, strlen(data), 0);
+#endif
+}
 
-  // Réinitialisation de l'ensemble des données
-  memset(data, 0, sizeof(data));
+int recevoir(socket_t socketfd, char *data, int taille)
+{
+#ifdef _WIN32
+    return recv(socketfd, data, taille - 1, 0);
+#else
+    return (int)recv(socketfd, data, (size_t)taille - 1, 0);
+#endif
+}
 
-  // Demande à l'utilisateur d'entrer un message
-  char message[1024];
-  printf("Votre message (max 1000 caractères): ");
-  fgets(message, sizeof(message), stdin);
+double envoie_operateur_numeros(socket_t socketfd, char op, double a, double b)
+{
+    char data[1024];
+    int taille;
+    double resultat = 0;
 
-  // Construit le message avec une étiquette "message: "
-  strcpy(data, "message: ");
-  strcat(data, message);
+    snprintf(data, sizeof(data), "calcule : %c %.6f %.6f", op, a, b);
 
-  // Envoie le message au client
-  int write_status = write(socketfd, data, strlen(data));
-  if (write_status < 0)
-  {
-    perror("Erreur d'écriture");
-    return -1;
-  }
+    if (envoyer(socketfd, data) <= 0)
+        return 0;
 
-  // Réinitialisation de l'ensemble des données
-  memset(data, 0, sizeof(data));
+    memset(data, 0, sizeof(data));
+    taille = recevoir(socketfd, data, sizeof(data));
 
-  // Lit les données de la socket
-  int read_status = read(socketfd, data, sizeof(data));
-  if (read_status < 0)
-  {
-    perror("Erreur de lecture");
-    return -1;
-  }
+    if (taille <= 0)
+        return 0;
 
-  // Affiche le message reçu du client
-  printf("Message reçu: %s\n", data);
+    data[taille] = '\0';
+    printf("%s\n", data);
 
-  return 0; // Succès
+    sscanf(data, "calcule : %lf", &resultat);
+    return resultat;
+}
+
+int envoie_recois_message(socket_t socketfd)
+{
+    char message[1000];
+    char data[1024];
+    int taille;
+
+    printf("Votre message : ");
+
+    if (fgets(message, sizeof(message), stdin) == NULL)
+        return -1;
+
+    message[strcspn(message, "\n")] = '\0';
+
+    snprintf(data, sizeof(data), "message: %s", message);
+
+    if (envoyer(socketfd, data) <= 0)
+        return -1;
+
+    memset(data, 0, sizeof(data));
+    taille = recevoir(socketfd, data, sizeof(data));
+
+    if (taille <= 0)
+        return -1;
+
+    data[taille] = '\0';
+    printf("Message recu: %s\n", data);
+
+    return 0;
+}
+
+double lire_note(int etudiant, int note)
+{
+    char chemin[200];
+    FILE *fichier;
+    double valeur = 0;
+
+    snprintf(chemin, sizeof(chemin),
+             "../etudiant/%d/note%d.txt", etudiant, note);
+
+    fichier = fopen(chemin, "r");
+
+    if (fichier == NULL)
+        return 0;
+
+    fscanf(fichier, "%lf", &valeur);
+    fclose(fichier);
+
+    return valeur;
+}
+
+void calculer_notes(socket_t socketfd)
+{
+    int etudiant;
+    int note;
+    double sommeClasse = 0;
+
+    for (etudiant = 1; etudiant <= 5; etudiant++)
+    {
+        double sommeEtudiant = 0;
+
+        for (note = 1; note <= 5; note++)
+        {
+            double valeur = lire_note(etudiant, note);
+            sommeEtudiant = envoie_operateur_numeros(
+                socketfd, '+', sommeEtudiant, valeur);
+        }
+
+        printf("Somme etudiant %d : %.2f\n",
+               etudiant, sommeEtudiant);
+
+        sommeClasse = envoie_operateur_numeros(
+            socketfd, '+', sommeClasse, sommeEtudiant);
+    }
+
+    printf("Moyenne classe : %.2f\n",
+           envoie_operateur_numeros(
+               socketfd, '/', sommeClasse, 25));
 }
 
 int main()
 {
-  int socketfd;
+    socket_t socketfd;
+    struct sockaddr_in serveur;
+    char commande[100];
 
-  struct sockaddr_in server_addr;
+#ifdef _WIN32
+    WSADATA wsa;
 
-  /*
-   * Creation d'une socket
-   */
-  socketfd = socket(AF_INET, SOCK_STREAM, 0);
-  if (socketfd < 0)
-  {
-    perror("socket");
-    exit(EXIT_FAILURE);
-  }
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+    {
+        printf("Erreur WSAStartup\n");
+        return 1;
+    }
+#endif
 
-  // détails du serveur (adresse et port)
-  memset(&server_addr, 0, sizeof(server_addr));
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(PORT);
-  server_addr.sin_addr.s_addr = INADDR_ANY;
+    socketfd = socket(AF_INET, SOCK_STREAM, 0);
 
-  // demande de connection au serveur
-  int connect_status = connect(socketfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
-  if (connect_status < 0)
-  {
-    perror("connection serveur");
-    exit(EXIT_FAILURE);
-  }
+#ifdef _WIN32
+    if (socketfd == INVALID_SOCKET)
+#else
+    if (socketfd < 0)
+#endif
+    {
+        printf("Erreur socket\n");
+        return 1;
+    }
 
-  while (1)
-  {
-    // appeler la fonction pour envoyer un message au serveur
-    envoie_recois_message(socketfd);
-  }
+    memset(&serveur, 0, sizeof(serveur));
+    serveur.sin_family = AF_INET;
+    serveur.sin_port = htons(PORT);
+    serveur.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-  close(socketfd);
+    if (connect(socketfd, (struct sockaddr *)&serveur,
+                sizeof(serveur)) != 0)
+    {
+        printf("Impossible de se connecter au serveur\n");
+        close_socket(socketfd);
+        return 1;
+    }
+
+    while (1)
+    {
+        printf("\nTapez message, calcule, notes ou quit : ");
+
+        if (fgets(commande, sizeof(commande), stdin) == NULL)
+            break;
+
+        commande[strcspn(commande, "\n")] = '\0';
+
+        if (strcmp(commande, "quit") == 0)
+            break;
+
+        if (strcmp(commande, "notes") == 0)
+        {
+            calculer_notes(socketfd);
+            continue;
+        }
+
+        if (strncmp(commande, "calcule :", 9) == 0)
+        {
+            char op;
+            double a;
+            double b;
+
+            if (sscanf(commande, "calcule : %c %lf %lf",
+                       &op, &a, &b) == 3)
+            {
+                envoie_operateur_numeros(socketfd, op, a, b);
+            }
+            else
+            {
+                printf("Exemple : calcule : + 23 45\n");
+            }
+
+            continue;
+        }
+
+        {
+            char data[1024];
+            int taille;
+
+            snprintf(data, sizeof(data), "message: %s", commande);
+
+            if (envoyer(socketfd, data) <= 0)
+                break;
+
+            memset(data, 0, sizeof(data));
+            taille = recevoir(socketfd, data, sizeof(data));
+
+            if (taille <= 0)
+                break;
+
+            data[taille] = '\0';
+            printf("Message recu: %s\n", data);
+        }
+    }
+
+    close_socket(socketfd);
+
+#ifdef _WIN32
+    WSACleanup();
+#endif
+
+    return 0;
 }

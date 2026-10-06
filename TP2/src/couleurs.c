@@ -22,17 +22,16 @@ int main()
         {0x80, 0x80, 0x80, 0xff},
         {0xff, 0xff, 0xff, 0xff}
     };
-
     int i;
 
     for (i = 0; i < 10; i++)
     {
-        printf("Couleur %d : %u %u %u %u\n",
-            i + 1,
-            couleurs[i].r,
-            couleurs[i].g,
-            couleurs[i].b,
-            couleurs[i].a);
+        printf("Couleur %d : R=%u G=%u B=%u A=%u\n",
+               i + 1,
+               couleurs[i].r,
+               couleurs[i].g,
+               couleurs[i].b,
+               couleurs[i].a);
     }
 
     return 0;

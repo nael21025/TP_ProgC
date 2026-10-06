@@ -20,16 +20,15 @@ int main()
     double *pd = &d;
     long double *pld = &ld;
 
-    printf("Avant\n");
-
-    printf("%p %x\n", (void *)pc, (unsigned int)*pc);
-    printf("%p %hx\n", (void *)ps, (unsigned short)*ps);
-    printf("%p %x\n", (void *)pi, (unsigned int)*pi);
-    printf("%p %lx\n", (void *)pl, (unsigned long)*pl);
-    printf("%p %llx\n", (void *)pll, (unsigned long long)*pll);
-    printf("%p %a\n", (void *)pf, (double)*pf);
-    printf("%p %a\n", (void *)pd, *pd);
-    printf("%p %La\n", (void *)pld, *pld);
+    printf("Avant :\n");
+    printf("c  : %p -> %x\n", (void *)pc, (unsigned int)*pc);
+    printf("s  : %p -> %x\n", (void *)ps, (unsigned int)*ps);
+    printf("i  : %p -> %x\n", (void *)pi, (unsigned int)*pi);
+    printf("l  : %p -> %lx\n", (void *)pl, (unsigned long)*pl);
+    printf("ll : %p -> %llx\n", (void *)pll, (unsigned long long)*pll);
+    printf("f  : %p -> %a\n", (void *)pf, (double)*pf);
+    printf("d  : %p -> %a\n", (void *)pd, *pd);
+    printf("ld : %p -> %La\n", (void *)pld, *pld);
 
     *pc = 11;
     *ps = 21;
@@ -40,16 +39,15 @@ int main()
     *pd = 3.5;
     *pld = 4.5L;
 
-    printf("Apres\n");
-
-    printf("%p %x\n", (void *)pc, (unsigned int)*pc);
-    printf("%p %hx\n", (void *)ps, (unsigned short)*ps);
-    printf("%p %x\n", (void *)pi, (unsigned int)*pi);
-    printf("%p %lx\n", (void *)pl, (unsigned long)*pl);
-    printf("%p %llx\n", (void *)pll, (unsigned long long)*pll);
-    printf("%p %a\n", (void *)pf, (double)*pf);
-    printf("%p %a\n", (void *)pd, *pd);
-    printf("%p %La\n", (void *)pld, *pld);
+    printf("\nApres :\n");
+    printf("c  : %p -> %x\n", (void *)pc, (unsigned int)*pc);
+    printf("s  : %p -> %x\n", (void *)ps, (unsigned int)*ps);
+    printf("i  : %p -> %x\n", (void *)pi, (unsigned int)*pi);
+    printf("l  : %p -> %lx\n", (void *)pl, (unsigned long)*pl);
+    printf("ll : %p -> %llx\n", (void *)pll, (unsigned long long)*pll);
+    printf("f  : %p -> %a\n", (void *)pf, (double)*pf);
+    printf("d  : %p -> %a\n", (void *)pd, *pd);
+    printf("ld : %p -> %La\n", (void *)pld, *pld);
 
     return 0;
 }

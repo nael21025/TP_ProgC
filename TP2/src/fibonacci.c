@@ -10,7 +10,10 @@ int main()
 
     for (i = 0; i < n; i++)
     {
-        printf("%d ", a);
+        printf("%d", a);
+
+        if (i < n - 1)
+            printf(", ");
 
         suivant = a + b;
         a = b;
@@ -18,6 +21,5 @@ int main()
     }
 
     printf("\n");
-
     return 0;
 }

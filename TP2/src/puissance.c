@@ -10,7 +10,7 @@ int main()
     for (i = 0; i < b; i++)
         resultat = resultat * a;
 
-    printf("%d\n", resultat);
+    printf("%d^%d = %d\n", a, b, resultat);
 
     return 0;
 }

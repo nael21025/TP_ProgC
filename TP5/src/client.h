@@ -1,22 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2021 John Samuel
- *
- * SPDX-License-Identifier: GPL-3.0-or-later
- *
- */
+#ifndef CLIENT_H
+#define CLIENT_H
 
-#ifndef __CLIENT_H__
-#define __CLIENT_H__
-
-/*
- * port d'ordinateur pour envoyer et recevoir des messages
- */
 #define PORT 8089
 
-/*
- * Fonction d'envoi et de réception de messages
- * Il faut un argument : l'identifiant de la socket
- */
-int envoie_recois_message(int socketfd);
+#ifdef _WIN32
+#include <winsock2.h>
+typedef SOCKET socket_t;
+#else
+typedef int socket_t;
+#endif
+
+int envoie_recois_message(socket_t socketfd);
+double envoie_operateur_numeros(socket_t socketfd, char op, double a, double b);
 
 #endif

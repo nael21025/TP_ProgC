@@ -6,10 +6,8 @@ int main()
 {
     int entiers[10];
     float reels[10];
-
     int *pe = entiers;
     float *pr = reels;
-
     int i;
 
     srand((unsigned int)time(NULL));
@@ -17,11 +15,10 @@ int main()
     for (i = 0; i < 10; i++)
     {
         *(pe + i) = rand() % 100;
-        *(pr + i) = (float)(rand() % 1000) / 10;
+        *(pr + i) = (float)(rand() % 1000) / 10.0f;
     }
 
-    printf("Avant\n");
-
+    printf("Avant :\n");
     for (i = 0; i < 10; i++)
         printf("%d %.1f\n", *(pe + i), *(pr + i));
 
@@ -34,8 +31,7 @@ int main()
         }
     }
 
-    printf("Apres\n");
-
+    printf("Apres :\n");
     for (i = 0; i < 10; i++)
         printf("%d %.1f\n", *(pe + i), *(pr + i));
 
