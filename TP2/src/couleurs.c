@@ -1,0 +1,39 @@
+#include <stdio.h>
+
+struct Couleur
+{
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+    unsigned char a;
+};
+
+int main()
+{
+    struct Couleur couleurs[10] = {
+        {0xef, 0x78, 0x12, 0xff},
+        {0x2c, 0xc8, 0x64, 0xff},
+        {0xff, 0x00, 0x00, 0xff},
+        {0x00, 0xff, 0x00, 0xff},
+        {0x00, 0x00, 0xff, 0xff},
+        {0xff, 0xff, 0x00, 0xff},
+        {0xff, 0x00, 0xff, 0xff},
+        {0x00, 0xff, 0xff, 0xff},
+        {0x80, 0x80, 0x80, 0xff},
+        {0xff, 0xff, 0xff, 0xff}
+    };
+
+    int i;
+
+    for (i = 0; i < 10; i++)
+    {
+        printf("Couleur %d : %u %u %u %u\n",
+            i + 1,
+            couleurs[i].r,
+            couleurs[i].g,
+            couleurs[i].b,
+            couleurs[i].a);
+    }
+
+    return 0;
+}
